@@ -1,6 +1,6 @@
 import os
 import tree_sitter_python as tspython
-from tree_sitter import Language, Parser
+from tree_sitter import Language, Node, Parser
 from collections import defaultdict
 
 # Download and build the Python grammar for Tree-sitter
@@ -37,60 +37,98 @@ def get_imports(tree, source_code):
     return imports
 
 
+def get_qualified_name(node: Node, source_code):
+    """Get fully qualified name with parent hierarchy"""
+    hierarchy = []
+    current_node = node.parent
+    if current_node:
+        current_node = current_node.parent
+
+    while current_node:
+        if current_node.type in ["class_definition", "function_definition"]:
+            # Extract class / function name
+            for child in current_node.children:
+                if child.type == "identifier":
+                    hierarchy.append(source_code[child.start_byte : child.end_byte])
+                    break
+        current_node = current_node.parent
+
+    return ".".join(reversed(hierarchy))
+
+
 def get_classes_and_functions(tree, source_code):
-    class_query = PYTHON_LANGUAGE.query("""
+    """Capture all classes and functions with their hierarchy"""
+    query = PYTHON_LANGUAGE.query("""
     (class_definition
-        name: (identifier) @class_name) @class
-    """)
-
-    function_query = PYTHON_LANGUAGE.query("""
+        name: (identifier) @class_name) @class_def
+    
     (function_definition
-        name: (identifier) @function_name) @function
+        name: (identifier) @func_name) @func_def
     """)
 
-    classes = []
-    functions = []
+    results = {"classes": [], "functions": []}
 
-    for node, tags in class_query.captures(tree.root_node).items():
-        if node == "class_name":
+    for node, tags in query.captures(tree.root_node).items():
+        if node in ["class_name", "func_name"]:
             for t in tags:
-                classes.append(source_code[t.start_byte : t.end_byte])
+                class_func_name = source_code[t.start_byte : t.end_byte]
+                parent_hierarchy = get_qualified_name(t, source_code)
+                qualified_name = (
+                    f"{parent_hierarchy}.{class_func_name}"
+                    if parent_hierarchy
+                    else class_func_name
+                )
+                if node == "class_name":
+                    results["classes"].append(qualified_name)
+                elif node == "func_name":
+                    results["functions"].append(qualified_name)
 
-    for node, tags in function_query.captures(tree.root_node).items():
-        if node == "function_name":
-            for t in tags:
-                functions.append(source_code[t.start_byte : t.end_byte])
-
-    return classes, functions
+    return results
 
 
 def analyze_directory(directory):
-    structure = defaultdict(lambda: {"classes": [], "functions": [], "imports": []})
+    structure = defaultdict(
+        lambda: {"classes": [], "functions": [], "imports": [], "imported_by": []}
+    )
 
+    # First pass: collect all declarations
     for root, _, files in os.walk(directory):
         for file in files:
-            if file.endswith(".py"):
-                file_path = os.path.join(root, file)
-                tree, source_code = parse_file(file_path)
+            if not file.endswith(".py"):
+                continue
 
-                classes, functions = get_classes_and_functions(tree, source_code)
-                imports = get_imports(tree, source_code)
+            file_path = os.path.join(root, file)
 
-                structure[file_path]["classes"] = classes
-                structure[file_path]["functions"] = functions
-                structure[file_path]["imports"] = imports
+            tree, source_code = parse_file(file_path)
 
-    # Add file relationships based on imports
+            declarations = get_classes_and_functions(tree, source_code)
+            imports = get_imports(tree, source_code)
+
+            structure[file_path].update(
+                {
+                    "classes": declarations["classes"],
+                    "functions": declarations["functions"],
+                    "imports": imports,
+                }
+            )
+
     # BUG: Doesn't work
+    # Second pass: resolve relationships
 
-    # for file_path, data in structure.items():
-    #     data["imported_by"] = []
-    #     imported_modules = [imp.split(".")[0] for imp in data["imports"]]
-    #
-    #     for other_file, other_data in structure.items():
-    #         module_name = os.path.splitext(os.path.basename(other_file))[0]
-    #         if module_name in imported_modules:
-    #             other_data["imported_by"].append(file_path)
+    for file_path, data in structure.items():
+        for imp in data["imports"]:
+            # Simple module resolution (expand for packages as needed)
+            target_module = imp.split(".")[0]
+            target_path = None
+
+            # Find matching files
+            for fpath in structure:
+                if os.path.splitext(os.path.basename(fpath))[0] == target_module:
+                    target_path = fpath
+                    break
+
+            if target_path and target_path != file_path:
+                structure[target_path]["imported_by"].append(file_path)
 
     return structure
 
