@@ -82,14 +82,15 @@ def analyze_directory(directory):
 
     # Add file relationships based on imports
     # BUG: Doesn't work
-    for file_path, data in structure.items():
-        data["imported_by"] = []
-        imported_modules = [imp.split(".")[0] for imp in data["imports"]]
 
-        for other_file, other_data in structure.items():
-            module_name = os.path.splitext(os.path.basename(other_file))[0]
-            if module_name in imported_modules:
-                other_data["imported_by"].append(file_path)
+    # for file_path, data in structure.items():
+    #     data["imported_by"] = []
+    #     imported_modules = [imp.split(".")[0] for imp in data["imports"]]
+    #
+    #     for other_file, other_data in structure.items():
+    #         module_name = os.path.splitext(os.path.basename(other_file))[0]
+    #         if module_name in imported_modules:
+    #             other_data["imported_by"].append(file_path)
 
     return structure
 
