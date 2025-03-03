@@ -115,32 +115,19 @@ def analyze_directory(directory):
     # BUG: Doesn't work
     # Second pass: resolve relationships
 
-    for file_path, data in structure.items():
-        for imp in data["imports"]:
-            # Simple module resolution (expand for packages as needed)
-            target_module = imp.split(".")[0]
-            target_path = None
-
-            # Find matching files
-            for fpath in structure:
-                if os.path.splitext(os.path.basename(fpath))[0] == target_module:
-                    target_path = fpath
-                    break
-
-            if target_path and target_path != file_path:
-                structure[target_path]["imported_by"].append(file_path)
-
+    # for file_path, data in structure.items():
+    #     for imp in data["imports"]:
+    #         # Simple module resolution (expand for packages as needed)
+    #         target_module = imp.split(".")[0]
+    #         target_path = None
+    #
+    #         # Find matching files
+    #         for fpath in structure:
+    #             if os.path.splitext(os.path.basename(fpath))[0] == target_module:
+    #                 target_path = fpath
+    #                 break
+    #
+    #         if target_path and target_path != file_path:
+    #             structure[target_path]["imported_by"].append(file_path)
+    #
     return structure
-
-
-if __name__ == "__main__":
-    directory = input("Enter directory path to analyze: ")
-    result = analyze_directory(directory)
-
-    # Print results
-    for file, data in result.items():
-        print(f"\nFile: {file}")
-        print(f"Classes: {data['classes']}")
-        print(f"Functions: {data['functions']}")
-        print(f"Imports: {data['imports']}")
-        print(f"Imported by: {data['imported_by']}")

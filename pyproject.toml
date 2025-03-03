@@ -6,9 +6,15 @@ authors = ["Suleman Mahmood <sulemanmahmood99@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+# python = "^3.13"
+python = ">=3.13,<3.14"
 tree-sitter = "^0.24.0"
 tree-sitter-python = "^0.23.6"
+langchain = "^0.3.19"
+pinecone = "^5.4.2"
+pydantic-settings = "^2.8.1"
+langchain-openai = "^0.3.7"
+langchain-pinecone = "^0.2.3"
 
 
 [build-system]
