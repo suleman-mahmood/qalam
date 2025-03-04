@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="QALAM_", env_nested_delimiter="__")
     log_level: str = "INFO"
 
+    deepseek_api_key: str = ""
     openai_api_key: str = ""
     pinecone_api_key: str = ""
     pinecone_environment: str = ""

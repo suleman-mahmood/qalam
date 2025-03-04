@@ -4,7 +4,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from loguru import logger
 from pinecone import Pinecone, ServerlessSpec
-from pydantic import ValidationError
+from pydantic import SecretStr, ValidationError
 from qalam.config import settings
 
 
@@ -37,7 +37,8 @@ class PineconeDb:
         logger.info("Successfully connected to Pinecone index: {}", self.index_name)
 
         self.vector_store = PineconeVectorStore(
-            index=self.pinecone_index, embedding=OpenAIEmbeddings()
+            index=self.pinecone_index,
+            embedding=OpenAIEmbeddings(api_key=SecretStr(settings.openai_api_key)),
         )
 
     def add_directory_documents_to_pinecone_index(self, documents: list[str]):
