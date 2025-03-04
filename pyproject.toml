@@ -15,6 +15,7 @@ pinecone = "^5.4.2"
 pydantic-settings = "^2.8.1"
 langchain-openai = "^0.3.7"
 langchain-pinecone = "^0.2.3"
+loguru = "^0.7.3"
 
 
 [build-system]

@@ -133,3 +133,6 @@ class StaticAnalyser:
         #             structure[target_path]["imported_by"].append(file_path)
         #
         return structure
+
+    def get_directory_documents(self, directory) -> list[str]:
+        raise NotImplementedError

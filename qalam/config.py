@@ -1,19 +1,37 @@
-import logging
+import sys
+from loguru import logger
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-# Logging setup
-logging.basicConfig(
-    filename="data/logs/app.log",
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
-logging.info("Logging initialized.")
+_is_logging_configured = False
 
 
-# Configuration settings
+def setup_logging():
+    global _is_logging_configured  # noqa: PLW0603
+    if _is_logging_configured:
+        return
+
+    serialize = False
+    log_format = "<g>{time}</g> {level} <c>{module}.{file}:{line}</c> <bold>{message}</bold>\n  <le>{extra}</le>"
+    sink = sys.stderr
+
+    logger.configure(
+        handlers=[
+            {
+                "sink": sink,
+                "level": settings.log_level.upper(),
+                "serialize": serialize,
+                "format": log_format,
+            }
+        ]
+    )
+
+    _is_logging_configured = True
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="QALAM_", env_nested_delimiter="__")
+    log_level: str = "INFO"
 
     openai_api_key: str = ""
     pinecone_api_key: str = ""
@@ -21,6 +39,7 @@ class Settings(BaseSettings):
     pinecone_index_name: str = ""
 
 
-logging.info("Loading configuration from environment variables.")
 settings = Settings()
-logging.info("Configuration loaded successfully.")
+setup_logging()
+
+logger.info("Configuration loaded successfully.")
