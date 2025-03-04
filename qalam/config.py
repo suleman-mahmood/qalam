@@ -36,7 +36,6 @@ class Settings(BaseSettings):
     deepseek_api_key: str = ""
     openai_api_key: str = ""
     pinecone_api_key: str = ""
-    pinecone_environment: str = ""
     pinecone_index_name: str = ""
 
     default_dir: str = ""
