@@ -16,10 +16,6 @@ if __name__ == "__main__":
 
     logger.info("Initialized classes")
 
-    directory = input("Enter directory path to analyze: ")
-    if directory == "-1":
-        directory = settings.default_dir
-
     user_prompt = input("Ask something about your codebase: ")
 
     docs_with_context = pinecone_db.query_docs_for_prompt(user_prompt)
@@ -32,6 +28,10 @@ def analyze_files_and_add_docs_to_index(
     static_analyser: StaticAnalyser,
     pinecone_db: PineconeDb,
 ):
+    directory = input("Enter directory path to analyze: ")
+    if directory == "-1":
+        directory = settings.default_dir
+
     analysis_files = static_analyser.analyze_directory(directory)
     documents = parse_python_file_analysis_to_embedding_documents(analysis_files)
 

@@ -4,8 +4,8 @@ Install [poetry](https://python-poetry.org/docs/) first
 To get started, always start a shell using: `poetry shell`
 Install dependencies: `poetry install`
 
-Run the tree-sitter script: `python qalam/static-analyser.py`
-When prompted enter: `./qalam`
+Run your custom llm: `python -m qalam.main`
+
 
 #### Tools
 - CLI, choosing options, editing blob of text, accept / regenerate stuff
@@ -17,15 +17,14 @@ Codebase -> Statically analysed data
 
 - Input codebase, outputs a file within the token limit
 - Use treesitter to get python functions names from all the project files in  the targeted codebase
-- Make one huge file for next step
-	- Either treesitter creates relationship
-	- Or choose a format for a file and store all the information inside it
+- Generate a list of documents for next step
+	- Use treesitter to create relationship between documents
+	- Store all the information inside each document
 
 #### Step 2, Embeddings
 Vectorise data into db
 
-- Vectorise the above file
-- Store this in vector db, use pinecone db for simplicity
+- Vectorise the above documents into pinecone db
 
 #### Step 3, Code Plan
 User prompt + context -> Code plan
