@@ -5,7 +5,7 @@ from qalam.llm import LLM
 from qalam.pinecone import PineconeDb
 from qalam.static_analyser import StaticAnalyser
 from qalam.utils import (
-    generate_system_prompt,
+    generate_plan_system_prompt,
     parse_python_file_analysis_to_embedding_documents,
 )
 
@@ -19,7 +19,7 @@ if __name__ == "__main__":
     user_prompt = input("Ask something about your codebase: ")
 
     docs_with_context = pinecone_db.query_docs_for_prompt(user_prompt)
-    system_prompt = generate_system_prompt(docs_with_context, user_prompt)
+    system_prompt = generate_plan_system_prompt(docs_with_context, user_prompt)
 
     llm_res = llm.invoke_chat(system_prompt)
 

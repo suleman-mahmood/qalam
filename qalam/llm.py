@@ -15,20 +15,27 @@ class LLM:
             api_key=SecretStr(settings.openai_api_key),
         )
 
-        logger.info("OpenAI client initialized successfully.")
-
-    def generate_messages(self, prompt: str) -> list[tuple[str, str]]:
-        return [
-            ("system", "You are a helpful assistant."),
-            ("user", prompt),
+        self.messages = [
+            (
+                "developer",
+                "You are a helpful assistant that answers programming questions and writes good quality code",
+            ),
         ]
 
+        logger.info("OpenAI client initialized successfully.")
+
     def invoke_chat(self, prompt: str) -> str | list[str | dict]:
-        messages = self.generate_messages(prompt)
-        llm_res = self.llm.invoke(messages)
+        self.messages.append(("user", prompt))
+
+        llm_res = self.llm.invoke(self.messages)
         logger.info("LLM response received.")
 
         response_text = llm_res.content
         logger.info("LLM response text: {}", response_text)
+
+        if isinstance(response_text, str):
+            self.messages.append(("assistant", response_text))
+        else:
+            logger.error("llm response wasn't of type str", response=response_text)
 
         return response_text

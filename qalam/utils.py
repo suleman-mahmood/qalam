@@ -20,7 +20,10 @@ def parse_python_file_analysis_to_embedding_documents(
     return result
 
 
-def generate_system_prompt(retrieved_docs: list[Document], user_prompt: str) -> str:
+def generate_plan_system_prompt(
+    retrieved_docs: list[Document],
+    user_prompt: str,
+) -> str:
     logger.info("Combining retrieved context...")
     try:
         context = "\n".join([doc.page_content for doc in retrieved_docs])
@@ -34,7 +37,17 @@ def generate_system_prompt(retrieved_docs: list[Document], user_prompt: str) -> 
         logger.error("Error combining retrieved context: {}", context_error)
         raise ValidationError("Error combining retrieved context.")
 
-    system_prompt = f"Context: {context}\n\nQuestion: {user_prompt}\n\nAnswer:"
+    system_prompt = f"""
+        Context: {context}
+        Question: {user_prompt}
+        Instructions: Give only a plan for the implementation, that includes the stubs for:
+            - any files that need to be created or edited
+            - any functions that need to be created or edited
+            - any classes that need to be created or edited
+            - any tests that need to be created or edited
+            - or any other stubs that need to be created or edited
+        Answer:
+    """
     logger.info("Generated prompt: {}...", user_prompt[:200])
 
     return system_prompt
