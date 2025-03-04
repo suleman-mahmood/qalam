@@ -41,8 +41,11 @@ class PineconeDb:
             embedding=OpenAIEmbeddings(api_key=SecretStr(settings.openai_api_key)),
         )
 
-    def add_directory_documents_to_pinecone_index(self, documents: list[str]):
-        pass
+    def add_directory_documents_to_pinecone_index(
+        self, documents: list[str], ids: list[str]
+    ):
+        docs = [Document(page_content=d) for d in documents]
+        self.vector_store.add_documents(documents=docs, ids=ids)
 
     def query_docs_for_prompt(self, prompt: str) -> list[Document]:
         logger.info("Retrieving relevant documents from Pinecone...")

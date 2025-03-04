@@ -1,10 +1,18 @@
 import os
+from pydantic import BaseModel
 import tree_sitter_python as tspython
 from tree_sitter import Language, Node, Parser
 from collections import defaultdict
 
 # Download and build the Python grammar for Tree-sitter
 PYTHON_LANGUAGE = Language(tspython.language())
+
+
+class PythonFileAnalysis(BaseModel):
+    file_path: str
+    classes: list[str]
+    functions: list[str]
+    imports: list[str]
 
 
 class StaticAnalyser:
@@ -88,7 +96,7 @@ class StaticAnalyser:
         tree = self.parser.parse(bytes(source_code, "utf-8"))
         return tree, source_code
 
-    def analyze_directory(self, directory):
+    def analyze_directory(self, directory) -> list[PythonFileAnalysis]:
         structure = defaultdict(
             lambda: {"classes": [], "functions": [], "imports": [], "imported_by": []}
         )
@@ -114,6 +122,16 @@ class StaticAnalyser:
                     }
                 )
 
+        return [
+            PythonFileAnalysis(
+                file_path=os.path.relpath(file_path, directory),
+                classes=data.get("classes", []),
+                functions=data.get("functions", []),
+                imports=data.get("imports", []),
+            )
+            for file_path, data in structure.items()
+        ]
+
         # BUG: Doesn't work
         # Second pass: resolve relationships
 
@@ -132,7 +150,3 @@ class StaticAnalyser:
         #         if target_path and target_path != file_path:
         #             structure[target_path]["imported_by"].append(file_path)
         #
-        return structure
-
-    def get_directory_documents(self, directory) -> list[str]:
-        raise NotImplementedError
