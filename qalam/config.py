@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     pinecone_environment: str = ""
     pinecone_index_name: str = ""
 
+    default_dir: str = ""
+
 
 settings = Settings()
 setup_logging()

@@ -41,9 +41,7 @@ class PineconeDb:
             embedding=OpenAIEmbeddings(api_key=SecretStr(settings.openai_api_key)),
         )
 
-    def add_directory_documents_to_pinecone_index(
-        self, documents: list[str], ids: list[str]
-    ):
+    def add_documents_to_pinecone_index(self, documents: list[str], ids: list[str]):
         docs = [Document(page_content=d) for d in documents]
         self.vector_store.add_documents(documents=docs, ids=ids)
 
@@ -74,24 +72,3 @@ class PineconeDb:
                 raise ValidationError("Error retrieving documents from Pinecone.")
 
         return retrieved_docs
-
-    def generate_system_prompt(
-        self, retrieved_docs: list[Document], user_prompt: str
-    ) -> str:
-        logger.info("Combining retrieved context...")
-        try:
-            context = "\n".join([doc.page_content for doc in retrieved_docs])
-            if not context.strip():
-                logger.error("Retrieved documents have no valid content.")
-                raise ValidationError(
-                    "No relevant information found in the database. Please refine your query.",
-                )
-            logger.info("Retrieved context: {}...", context[:200])
-        except Exception as context_error:
-            logger.error("Error combining retrieved context: {}", context_error)
-            raise ValidationError("Error combining retrieved context.")
-
-        system_prompt = f"Context: {context}\n\nQuestion: {user_prompt}\n\nAnswer:"
-        logger.info("Generated prompt: {}...", user_prompt[:200])
-
-        return system_prompt
