@@ -65,3 +65,48 @@ def generate_plan_system_prompt(
     logger.info("Generated prompt: {}...", user_prompt[:200])
 
     return system_prompt
+
+
+def generate_code_stub_system_prompt() -> str:
+    system_prompt = """
+        Question: Implement the plan with code stubs
+        Instructions: Give code stubs for the implementation plan in the above step. An example of code stubs:
+            # routes/auth_routes.py
+            def hash_password(password: str) -> str:
+                # TODO: Use bcrypt
+                raise NotImplementedError
+
+            # schema/auth_models.py
+            class LoginSchema(BaseModel):
+                email: str
+                password: str
+        Answer:
+    """
+    logger.info("Generated prompt: {}...", system_prompt[:200])
+
+    return system_prompt
+
+
+def generate_code_impl_system_prompt() -> str:
+    system_prompt = """
+        Question: Write complete code implementation
+        Instructions: Give code implementation for the code stubs in the above step. An example of code implementation:
+            # routes/auth_routes.py
+            @fs_router.post("")
+            @proj_router.post("")
+            async def login_user_route(
+                body: LoginUserBody,
+                fiscal_sponsor_id: str,
+                project_id: str | None = None,
+                data_context: DataContext = Depends(get_data_context()),
+            ):
+                financial_unit_id = project_id or fiscal_sponsor_id
+                await auth_db.login_user(data_context, data_context.user_id)
+
+                return SuccessResponse()
+
+        Answer:
+    """
+    logger.info("Generated prompt: {}...", system_prompt[:200])
+
+    return system_prompt
