@@ -37,15 +37,29 @@ def generate_plan_system_prompt(
         logger.error("Error combining retrieved context: {}", context_error)
         raise ValidationError("Error combining retrieved context.")
 
+    # system_prompt = f"""
+    #     Context: {context}
+    #     Question: {user_prompt}
+    #     Instructions: Give only a plan for the implementation, that includes the stubs for:
+    #         - any files that need to be created or edited
+    #         - any functions that need to be created or edited
+    #         - any classes that need to be created or edited
+    #         - any tests that need to be created or edited
+    #         - or any other stubs that need to be created or edited
+    #     Answer:
+    # """
+
     system_prompt = f"""
         Context: {context}
         Question: {user_prompt}
-        Instructions: Give only a plan for the implementation, that includes the stubs for:
-            - any files that need to be created or edited
-            - any functions that need to be created or edited
-            - any classes that need to be created or edited
-            - any tests that need to be created or edited
-            - or any other stubs that need to be created or edited
+        Instructions: Give only a plan for the implementation that includes the stubs. An example of a plan to implement login system:
+            1. Create `routes/auth_routes.py` with:
+                - `login_user()`
+                - `signup_user()`
+                - `hash_password()`
+                - `verify_password()`
+            2 `LoginSchema` Pydantic model
+            3. Add tests to `tests/auth_routes_test.py`
         Answer:
     """
     logger.info("Generated prompt: {}...", user_prompt[:200])
