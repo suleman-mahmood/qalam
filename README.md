@@ -8,51 +8,35 @@ Run your custom llm: `python -m qalam.main`
 
 
 #### Tools
-- CLI, choosing options, editing blob of text, accept / regenerate stuff
+- CLI: choosing options, editing blob of text, accept / regenerate stuff
 - Python
 - Model: DeepSeek r1 or OpenAI
 
 #### Step 1, Static Analysis
 Codebase -> Statically analysed data
 
-- Input codebase, outputs a file within the token limit
-- Use treesitter to get python functions names from all the project files in  the targeted codebase
-- Generate a list of documents for next step
-	- Use treesitter to create relationship between documents
-	- Store all the information inside each document
+- Input codebase, outputs a list of structured data
+- Use treesitter to get python classes & functions names for each file
 
-#### Step 2, Embeddings
+#### Step 2, Generate embeddings
 Vectorise data into db
 
-- Vectorise the above documents into pinecone db
+- Split data into documents
+- Store this in vector db (pinecone)
 
-#### Step 3, Code Plan
+#### Step 3, Code Plan & stubs
 User prompt + context -> Code plan
 
 - User enters a prompt
-- Prompt (User query) will be embedded and use it to query vector db to get retrieved context
-- Construct system prompt from above step
-- Send this to LLM
+- Prompt (User query) will be embedded and use it to query vector db to get context
+- Construct system prompt  and send it to LLM
 - LLM output's the code plan
+- Edit / regenerate the code plan until satisfied
 
-#### Step 4, 1st user interaction
-Code plan -> Code stubs
+#### Step 4, Code implementation
+Code plan & stubs -> Code implementation
 
-- Show the code plan on CLI
-- User approves / regenerates (or edits) the plan
-	- Regenerate
-	- Approve
-		- Construct a new system prompt
-		- Code plan & new instructions will be sent to LLM
-- We get stubs from LLM
-
-#### Step 5, 2nd user interaction
-Code stubs -> Code implementation
-
-- Show the stubs on CLI
-- User approves / regenerates (or edits) the plan
-	- Regenerate
-	- Approve
-		- Construct a new system prompt
-		- Stubs  & new instructions will be sent to LLM
-- We get Code implementation from LLM
+- Feed the LLM's output from last step and use it to create embeddings and get context from the whole codebase
+- Construct system prompt  and send it to LLM
+- LLM output's the code implementation
+- Edit / regenerate the code implementation satisfied
