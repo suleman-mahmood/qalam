@@ -37,52 +37,73 @@ def generate_plan_system_prompt(
         logger.error("Error combining retrieved context: {}", context_error)
         raise ValidationError("Error combining retrieved context.")
 
-    # system_prompt = f"""
-    #     Context: {context}
-    #     Question: {user_prompt}
-    #     Instructions: Give only a plan for the implementation, that includes the stubs for:
-    #         - any files that need to be created or edited
-    #         - any functions that need to be created or edited
-    #         - any classes that need to be created or edited
-    #         - any tests that need to be created or edited
-    #         - or any other stubs that need to be created or edited
-    #     Answer:
-    # """
-
     system_prompt = f"""
         Context: {context}
         Question: {user_prompt}
-        Instructions: Give only a plan for the implementation that includes the stubs. An example of a plan to implement login system:
-            1. Create `routes/auth_routes.py` with:
-                - `login_user()`
-                - `signup_user()`
-                - `hash_password()`
-                - `verify_password()`
-            2 `LoginSchema` Pydantic model
-            3. Add tests to `tests/auth_routes_test.py`
-        Answer:
-    """
-    logger.info("Generated prompt: {}...", user_prompt[:200])
+        Instructions: Give only the implementation plan that includes the code stubs. An example of code stubs to implement login system:
 
-    return system_prompt
+            ### ###
+            ### schema/user_models.py
+            ### ###
 
+            from typing import Optional
 
-def generate_code_stub_system_prompt() -> str:
-    system_prompt = """
-        Question: Implement the plan with code stubs
-        Instructions: Give code stubs for the implementation plan in the above step. An example of code stubs:
-            # routes/auth_routes.py
-            def hash_password(password: str) -> str:
+            class User:
+                user_id: int
+                username: str
+
+            class LoginSchema(BaseModel):
+                email: str
+                hashed_password: str
+
+            ### ###
+            ### controllers/auth.py
+            ### ###
+
+            from typing import Optional
+            from models import User
+
+            # Registers a new user and returns the created User object.
+            def register_user(username: str, email: str, password: str) -> User:
+                raise NotImplementedError
+
+            # Retrieves a user by their unique ID. Returns None if not found.
+            def get_user_by_id(user_id: int) -> Optional[User]:
+                raise NotImplementedError
+
+            # Authenticates a user with the given username and password.
+            # Returns a session token as a string if authentication is successful, otherwise None.
+            def login(username: str, password: str) -> Optional[str]:
+                raise NotImplementedError
+
+            # Validates the provided session token.
+            # Returns True if the token is valid, False otherwise.
+            def validate_token(token: str) -> bool:
+                raise NotImplementedError
+
+            # Logs out the user by invalidating the session token.
+            # Returns True if logout is successful.
+            def logout(token: str) -> bool:
+                raise NotImplementedError
+
+            ### ###
+            ### routes/auth_routes.py
+            ### ###
+
+            @fs_router.post("/login")
+            @proj_router.post("/login")
+            async def login_route(
+                body: LoginUserBody
+                fiscal_sponsor_id: str,
+                project_id: str | None = None,
+                data_context: DataContext = Depends(get_data_context()),
+            ):
                 # TODO: Use bcrypt
                 raise NotImplementedError
 
-            # schema/auth_models.py
-            class LoginSchema(BaseModel):
-                email: str
-                password: str
         Answer:
     """
-    logger.info("Generated prompt: {}...", system_prompt[:200])
+    logger.info("Generated prompt: {}...", user_prompt[:200])
 
     return system_prompt
 
@@ -91,7 +112,11 @@ def generate_code_impl_system_prompt() -> str:
     system_prompt = """
         Question: Write complete code implementation
         Instructions: Give code implementation for the code stubs in the above step. An example of code implementation:
-            # routes/auth_routes.py
+
+            ### ###
+            ### routes/auth_routes.py
+            ### ###
+
             @fs_router.post("")
             @proj_router.post("")
             async def login_user_route(

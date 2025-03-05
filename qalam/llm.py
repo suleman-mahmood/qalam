@@ -25,6 +25,7 @@ class LLM:
         logger.info("OpenAI client initialized successfully.")
 
     def invoke_chat(self, prompt: str) -> str | list[str | dict]:
+        # TODO: Remove context from previous messages and include only assistant's response
         self.messages.append(("user", prompt))
 
         llm_res = self.llm.invoke(self.messages)
