@@ -20,6 +20,22 @@ def parse_python_file_analysis_to_embedding_documents(
     return result
 
 
+def parse_python_code_to_embedding_documents(
+    analysis_filse: list[PythonFileAnalysis],
+) -> list[str]:
+    result: list[str] = []
+    for file in analysis_filse:
+        defs = file.functions_defs + file.classes_defs
+        for d in defs:
+            out = f"""
+            File path: {file.file_path}
+            {d}
+            """
+            result.append(out)
+
+    return result
+
+
 def generate_plan_system_prompt(
     retrieved_docs: list[Document],
     user_prompt: str,
@@ -108,8 +124,11 @@ def generate_plan_system_prompt(
     return system_prompt
 
 
-def generate_code_impl_system_prompt() -> str:
-    system_prompt = """
+def generate_code_impl_system_prompt(retrieved_docs: list[Document]) -> str:
+    context = "\n".join([doc.page_content for doc in retrieved_docs])
+
+    system_prompt = f"""
+        Context: {context}
         Question: Write complete code implementation
         Instructions: Give code implementation for the code stubs in the above step. An example of code implementation:
 

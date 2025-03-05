@@ -1,6 +1,6 @@
 from loguru import logger
 from langchain_openai import ChatOpenAI
-from pydantic import SecretStr
+from pydantic import SecretStr, ValidationError
 
 from qalam.config import settings
 
@@ -24,19 +24,18 @@ class LLM:
 
         logger.info("OpenAI client initialized successfully.")
 
-    def invoke_chat(self, prompt: str) -> str | list[str | dict]:
+    def invoke_chat(self, prompt: str) -> str:
         # TODO: Remove context from previous messages and include only assistant's response
         self.messages.append(("user", prompt))
 
         llm_res = self.llm.invoke(self.messages)
-        logger.info("LLM response received.")
-
         response_text = llm_res.content
+
         logger.info("LLM response text: {}", response_text)
 
         if isinstance(response_text, str):
             self.messages.append(("assistant", response_text))
+            return response_text
         else:
             logger.error("llm response wasn't of type str", response=response_text)
-
-        return response_text
+            raise ValidationError("LLM response wasn't a str")

@@ -11,7 +11,9 @@ PYTHON_LANGUAGE = Language(tspython.language())
 class PythonFileAnalysis(BaseModel):
     file_path: str
     classes: list[str]
+    classes_defs: list[str]
     functions: list[str]
+    functions_defs: list[str]
     imports: list[str]
 
 
@@ -70,22 +72,32 @@ class StaticAnalyser:
             """
         )
 
-        results = {"classes": [], "functions": []}
+        results = {
+            "classes": [],
+            "classes_defs": [],
+            "functions": [],
+            "functions_defs": [],
+        }
 
         for node, tags in query.captures(tree.root_node).items():
             if node in ["class_name", "func_name"]:
                 for t in tags:
-                    class_func_name = source_code[t.start_byte : t.end_byte]
+                    body = source_code[t.start_byte : t.end_byte]
                     parent_hierarchy = self.get_qualified_name(t, source_code)
                     qualified_name = (
-                        f"{parent_hierarchy}.{class_func_name}"
-                        if parent_hierarchy
-                        else class_func_name
+                        f"{parent_hierarchy}.{body}" if parent_hierarchy else body
                     )
                     if node == "class_name":
                         results["classes"].append(qualified_name)
                     elif node == "func_name":
                         results["functions"].append(qualified_name)
+            elif node in ["class_def", "func_def"]:
+                for t in tags:
+                    body = source_code[t.start_byte : t.end_byte]
+                    if node == "class_def":
+                        results["classes_defs"].append(body)
+                    elif node == "func_def":
+                        results["functions_defs"].append(body)
 
         return results
 
@@ -98,7 +110,14 @@ class StaticAnalyser:
 
     def analyze_directory(self, directory) -> list[PythonFileAnalysis]:
         structure = defaultdict(
-            lambda: {"classes": [], "functions": [], "imports": [], "imported_by": []}
+            lambda: {
+                "classes": [],
+                "classes_defs": [],
+                "functions": [],
+                "functions_defs": [],
+                "imports": [],
+                "imported_by": [],
+            }
         )
 
         # First pass: collect all declarations
@@ -117,7 +136,9 @@ class StaticAnalyser:
                 structure[file_path].update(
                     {
                         "classes": declarations["classes"],
+                        "classes_defs": declarations["classes_defs"],
                         "functions": declarations["functions"],
+                        "functions_defs": declarations["functions_defs"],
                         "imports": imports,
                     }
                 )
@@ -126,7 +147,9 @@ class StaticAnalyser:
             PythonFileAnalysis(
                 file_path=os.path.relpath(file_path, directory),
                 classes=data.get("classes", []),
+                classes_defs=data.get("classes_defs", []),
                 functions=data.get("functions", []),
+                functions_defs=data.get("functions_defs", []),
                 imports=data.get("imports", []),
             )
             for file_path, data in structure.items()
