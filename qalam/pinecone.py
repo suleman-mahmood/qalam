@@ -60,7 +60,9 @@ class PineconeDb:
         logger.info("Retrieving relevant documents from Pinecone...")
 
         try:
-            retrieved_docs = self.stubs_vector_store.similarity_search(query=prompt)
+            retrieved_docs = self.stubs_vector_store.similarity_search(
+                query=prompt, k=3
+            )
             if not retrieved_docs:
                 logger.error("No relevant documents found in Pinecone.")
                 raise ValidationError(
