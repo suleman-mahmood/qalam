@@ -56,55 +56,17 @@ def generate_plan_system_prompt(
     system_prompt = f"""
         Context: {context}
         Question: {user_prompt}
-        Instructions: Give only the implementation plan that includes the code stubs. An example of code stubs to implement login system:
+        Instructions:
+            - Give only the implementation plan that includes the code stubs.
+            - You can also re-use functions / classes in the context if it seems suitable to edit them instead of creating new ones
+            - An example of code stubs to implement login system:
 
-            ### ###
             ### schema/user_models.py
-            ### ###
 
-            from typing import Optional
+            class LoginData(BaseModel):
+                pass
 
-            class User:
-                user_id: int
-                username: str
-
-            class LoginSchema(BaseModel):
-                email: str
-                hashed_password: str
-
-            ### ###
-            ### controllers/auth.py
-            ### ###
-
-            from typing import Optional
-            from models import User
-
-            # Registers a new user and returns the created User object.
-            def register_user(username: str, email: str, password: str) -> User:
-                raise NotImplementedError
-
-            # Retrieves a user by their unique ID. Returns None if not found.
-            def get_user_by_id(user_id: int) -> Optional[User]:
-                raise NotImplementedError
-
-            # Authenticates a user with the given username and password.
-            # Returns a session token as a string if authentication is successful, otherwise None.
-            def login(username: str, password: str) -> Optional[str]:
-                raise NotImplementedError
-
-            # Validates the provided session token.
-            # Returns True if the token is valid, False otherwise.
-            def validate_token(token: str) -> bool:
-                raise NotImplementedError
-
-            # Logs out the user by invalidating the session token.
-            # Returns True if logout is successful.
-            def logout(token: str) -> bool:
-                raise NotImplementedError
-
-            ### ###
             ### routes/auth_routes.py
-            ### ###
 
             @fs_router.post("/login")
             @proj_router.post("/login")
@@ -114,7 +76,17 @@ def generate_plan_system_prompt(
                 project_id: str | None = None,
                 data_context: DataContext = Depends(get_data_context()),
             ):
-                # TODO: Use bcrypt
+                raise NotImplementedError
+
+            ### interface/auth_db.py
+
+            @dal()
+            async def get_auth_token(data_context: DataContext, user_id: str):
+                raise NotImplementedError
+
+            ### controllers/auth.py
+
+            async def login_user(data_context: DataContext, data: LoginData) -> Session:
                 raise NotImplementedError
 
         Answer:
@@ -130,7 +102,9 @@ def generate_code_impl_system_prompt(retrieved_docs: list[Document]) -> str:
     system_prompt = f"""
         Context: {context}
         Question: Write complete code implementation
-        Instructions: Give code implementation for the code stubs in the above step. An example of code implementation:
+        Instructions:
+            - Give code implementation for the code stubs in the above step.
+            - An example of code implementation:
 
             ### ###
             ### routes/auth_routes.py
@@ -145,7 +119,7 @@ def generate_code_impl_system_prompt(retrieved_docs: list[Document]) -> str:
                 data_context: DataContext = Depends(get_data_context()),
             ):
                 financial_unit_id = project_id or fiscal_sponsor_id
-                await auth_db.login_user(data_context, data_context.user_id)
+                await auth_db.get_auth_token(data_context, data_context.user_id)
 
                 return SuccessResponse()
 
