@@ -40,3 +40,17 @@ Code plan & stubs -> Code implementation
 - Construct system prompt  and send it to LLM
 - LLM output's the code implementation
 - Edit / regenerate the code implementation satisfied
+
+#### Logging
+- Save sequence of user inputs and llm responses in a file
+
+#### Use cases
+- Choose to generate stubs
+- Choose to generate code implementations from stubs provided
+- Choose an option to write a function (route, db, controller) and give a prompt
+- Choose an option to write a test case for a function (route, db, controller) and provide the code for the function
+
+- User input is provided from a file, specific for each prompt
+
+#### QA
+- Test against the same input to 'Cursor'
