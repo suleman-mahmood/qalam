@@ -51,10 +51,23 @@ class FileHandler:
         json_data = [doc.model_dump(mode="json") for doc in documents]
         self._save_dict_to_file(file_path, json_data)
 
+    def save_code_impl_prompt_docs(self, documents: list[Document]):
+        file_path = f"./outputs/{self.timestamp}_code_impl_prompt_docs.json"
+        json_data = [doc.model_dump(mode="json") for doc in documents]
+        self._save_dict_to_file(file_path, json_data)
+
     def save_code_stubs_system_prompt(self, prompt: str):
         file_path = f"./outputs/{self.timestamp}_code_stubs_system_prompt.txt"
         self._save_str_to_file(file_path, prompt)
 
+    def save_code_impl_system_prompt(self, prompt: str):
+        file_path = f"./outputs/{self.timestamp}_code_impl_system_prompt.txt"
+        self._save_str_to_file(file_path, prompt)
+
     def save_llm_stubs_response(self, res: str):
         file_path = f"./outputs/{self.timestamp}_llm_stubs.txt"
+        self._save_str_to_file(file_path, res)
+
+    def save_llm_impl_response(self, res: str):
+        file_path = f"./outputs/{self.timestamp}_llm_impl.txt"
         self._save_str_to_file(file_path, res)

@@ -62,16 +62,20 @@ if __name__ == "__main__":
         file_handler.save_llm_stubs_response(llm_res)
 
     elif user_input == "2":
-        # TODO:  Incomplete stuff
-        raise NotImplementedError
+        user_prompt = file_handler.read_file(FileReadType.STUB_PROMPT)
+        logger.info("User prompt: {}", user_prompt)
+
         stubs_llm_res = file_handler.read_file(FileReadType.LLM_STUBS)
         logger.info("Stubs llm response: {}", stubs_llm_res)
 
         docs_with_context = pinecone_db.query_code_docs(stubs_llm_res)
-        system_prompt = generate_code_impl_system_prompt(docs_with_context)
+        file_handler.save_code_impl_prompt_docs(docs_with_context)
 
-        # TODO: Handle llm chat history appropriately
-        llm_res = llm.invoke_chat(system_prompt)
+        system_prompt = generate_code_impl_system_prompt(docs_with_context)
+        file_handler.save_code_impl_system_prompt(system_prompt)
+
+        llm_res = llm.invoke_chat(system_prompt, (user_prompt, stubs_llm_res))
+        file_handler.save_llm_impl_response(llm_res)
 
     else:
         print("Invalid option, quitting...")

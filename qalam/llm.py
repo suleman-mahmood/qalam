@@ -15,26 +15,51 @@ class LLM:
             api_key=SecretStr(settings.openai_api_key),
         )
 
-        self.messages = [
-            (
-                "developer",
-                "You are a helpful assistant that answers programming questions and writes good quality code",
-            ),
-        ]
-
         logger.info("OpenAI client initialized successfully.")
 
-    def invoke_chat(self, prompt: str) -> str:
-        # TODO: Remove context from previous messages and include only assistant's response
-        self.messages.append(("user", prompt))
+    def invoke_chat(
+        self,
+        prompt: str,
+        history_message: tuple[str, str] | None = None,
+    ) -> str:
+        llm_messages: list[tuple]
+        if history_message:
+            llm_messages = [
+                (
+                    "developer",
+                    "You are a helpful assistant that answers programming questions and writes good quality code",
+                ),
+                (
+                    "user",
+                    history_message[0],
+                ),
+                (
+                    "assistant",
+                    history_message[1],
+                ),
+                (
+                    "user",
+                    prompt,
+                ),
+            ]
+        else:
+            llm_messages = [
+                (
+                    "developer",
+                    "You are a helpful assistant that answers programming questions and writes good quality code",
+                ),
+                (
+                    "user",
+                    prompt,
+                ),
+            ]
 
-        llm_res = self.llm.invoke(self.messages)
+        llm_res = self.llm.invoke(llm_messages)
         response_text = llm_res.content
 
         logger.info("LLM response text: {}", response_text)
 
         if isinstance(response_text, str):
-            self.messages.append(("assistant", response_text))
             return response_text
         else:
             logger.error("llm response wasn't of type str", response=response_text)
