@@ -50,15 +50,12 @@ if __name__ == "__main__":
 
     if user_input == "1":
         user_prompt = file_handler.read_file(FileReadType.STUB_PROMPT)
-        assert isinstance(user_prompt, StubPrompt)
         logger.info("User prompt: {}", user_prompt)
 
-        docs_with_context = pinecone_db.query_stub_docs(user_prompt.prompt)
+        docs_with_context = pinecone_db.query_stub_docs(user_prompt)
         file_handler.save_stub_prompt_docs(docs_with_context)
 
-        system_prompt = generate_plan_system_prompt(
-            docs_with_context, user_prompt.prompt
-        )
+        system_prompt = generate_plan_system_prompt(docs_with_context, user_prompt)
         file_handler.save_code_stubs_system_prompt(system_prompt)
 
         llm_res = llm.invoke_chat(system_prompt)
@@ -68,10 +65,9 @@ if __name__ == "__main__":
         # TODO:  Incomplete stuff
         raise NotImplementedError
         stubs_llm_res = file_handler.read_file(FileReadType.LLM_STUBS)
-        assert isinstance(stubs_llm_res, LllmStubs)
         logger.info("Stubs llm response: {}", stubs_llm_res)
 
-        docs_with_context = pinecone_db.query_code_docs(stubs_llm_res.response)
+        docs_with_context = pinecone_db.query_code_docs(stubs_llm_res)
         system_prompt = generate_code_impl_system_prompt(docs_with_context)
 
         # TODO: Handle llm chat history appropriately
